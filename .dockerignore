@@ -1,0 +1,6 @@
+.git
+.vscode
+*env
+.env*
+docker-compose*
+app/*/__pycache__
