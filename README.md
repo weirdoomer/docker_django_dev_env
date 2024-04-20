@@ -13,8 +13,9 @@ This template is intended only for running on a developer's machine, not for dep
 mkdir name_your_django_project  
 cd name_your_django_project  
 git clone git@github.com:weirdoomer/docker_django_dev_env.git
+cd docker_django_dev_env
 ```
-2. In the root folder, copy the project's django repository, adding it to the **app** folder
+2. In the **docker_django_dev_env** folder, copy the project's django repository, adding it to the **app** folder
 ```bash
 git clone your_repository_link ./app
 ```
