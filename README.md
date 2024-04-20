@@ -23,11 +23,14 @@ git clone your_repository_link ./app
 - In the .env file, replace the environment variables for the django project with your own.
 3. To configure debugging in container via debugpy, add to the manage.py file
 ```python
-if settings.DEBUG:
+from django.conf import settings
+
+
+    if settings.DEBUG:
         if os.environ.get('RUN_MAIN'):
             import debugpy
             debugpy.listen(('0.0.0.0', 3000))
-            print('debugpy attached!') 
+            print('debugpy attached!')
 ```
 4. To build containers with django and postgres, run
 ```bash
