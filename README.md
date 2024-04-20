@@ -7,18 +7,52 @@ This template is intended only for running on a developer's machine, not for dep
 - Debugging code running in a container in VS Code (using the debugpy package and the VS Code configuration file for debugging).
 - Launching a container with the project code only after checking that the container with postgres is functioning properly and the database necessary for django has been created in it (healthcheck in docker compose).
 
-## Settings:
-1. Copy the project from github.
-2. Create a django project in the app folder. 
-- The requirements.dev.txt file (which is in the app folder) contains the minimum required packages for working with django, postgres and debugging in the container; add your own packages if necessary.
+## Setup:
+1. Create a root folder with name your django project and go to it. Copy the template project from github there.
+```bash
+mkdir name_your_django_project  
+cd name_your_django_project  
+git clone git@github.com:weirdoomer/docker_django_dev_env.git
+```
+2. In the root folder, copy the project's django repository, adding it to the **app** folder
+```bash
+git clone your_repository_link ./app
+```
+- The requirements.dev.txt file contains the minimum required packages for working with django, postgres and debugging in the container; add your own packages if necessary.
 - In the .env file, replace the environment variables for the django project with your own.
-3. To build containers with django and postgres, run
-> docker compose -f docker-compose.dev.yml build --build-arg USER=$USER --build-arg UID=$UID
-4. To launch all containers in the background, run
-> docker compose -f docker-compose.dev.yml up -d
-5. To stop all containers, run
-> docker compose -f docker-compose.dev.yml stop
-6. To start stopped containers, run
-> docker compose -f docker-compose.dev.yml start
-7. To remove all containers (with volumes attached to them, argument -v) run
-> docker compose -f docker-compose.dev.yml down -v
+3. To configure debugging in container via debugpy, add to the manage.py file
+```python
+if settings.DEBUG:
+        if os.environ.get('RUN_MAIN'):
+            import debugpy
+            debugpy.listen(('0.0.0.0', 3000))
+            print('debugpy attached!') 
+```
+4. To build containers with django and postgres, run
+```bash
+docker compose -f docker-compose.dev.yml build --build-arg USER=$USER --build-arg UID=$UID
+```
+5. To launch all containers in the background, run
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+6. To stop all containers, run
+```bash
+docker compose -f docker-compose.dev.yml stop
+```
+7. To start stopped containers, run
+```bash
+docker compose -f docker-compose.dev.yml start
+```
+8. To remove all containers (with volumes attached to them, argument -v) run
+```bash
+docker compose -f docker-compose.dev.yml down -v
+```
+
+## Development:
+- Edit the code and save. When saving files, the runserver inside the container will restart.
+- **Django shell** should be used inside a container, not on the host machine (since the database is also deployed inside the container, and not on the host machine). To use **django shell** run
+```bash
+docker compose -f docker-compose.dev.yml exec web python manage.py shell
+```
+- Creating and applying migrations as well as other **manage.py** commands should also be executed to the web container via **docker compose exec**
