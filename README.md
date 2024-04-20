@@ -55,4 +55,4 @@ docker compose -f docker-compose.dev.yml down -v
 ```bash
 docker compose -f docker-compose.dev.yml exec web python manage.py shell
 ```
-- Создание и применение миграций а так же остальные команды **manage.py** также следует выполнять к контейнере **web** через **docker compose exec**
+- Creating and applying migrations as well as other **manage.py** commands should also be executed to the web container via **docker compose exec**
