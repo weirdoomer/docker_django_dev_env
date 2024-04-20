@@ -17,7 +17,8 @@
                     "localRoot": "${workspaceFolder}/app",
                     "remoteRoot": "/home/weirdoomer/app/"
                 }
-            ]
+            ],
+            "justMyCode": false
         }
     ]
 }
