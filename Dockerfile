@@ -15,5 +15,5 @@ USER $USER
 WORKDIR /home/$USER/app
 
 RUN pip install --upgrade pip
-COPY --chown=$USER ./app/requirements.dev.txt .
+COPY --chown=$USER ./requirements.dev.txt .
 RUN pip install -r requirements.dev.txt
