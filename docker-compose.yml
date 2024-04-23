@@ -18,7 +18,7 @@ services:
         target: /home/${USER}/app/
     # Файл содержащий переменные окружения для контейнера
     env_file:
-      - ./app/.env
+      - ./.env
     depends_on:
         db:
           condition: service_healthy
@@ -29,7 +29,7 @@ services:
     volumes:
       - postgres_volume:/var/lib/postgresql/data/
     env_file:
-      - ./app/.env
+      - ./.env
     healthcheck:
       test: ["CMD-SHELL", "psql --username=${POSTGRES_USER} --dbname=${POSTGRES_DB} -c 'select now();' || exit 1"]
       interval: 5s
