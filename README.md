@@ -22,7 +22,7 @@ git clone your_repository_link ./app
 ```
 - In the **app** folder (in which the repository with the django project is cloned) there should be a file called **requirements.txt** and the following packages necessary for the containers to work: **Django, "psycopg[binary]", debugpy**
 ```bash
-(вывод команды pip freeze)
+(pip freeze command output)
 
 asgiref==3.8.1
 debugpy==1.8.1
