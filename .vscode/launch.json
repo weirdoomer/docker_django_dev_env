@@ -18,6 +18,7 @@
                     "remoteRoot": "/home/weirdoomer/app/"
                 }
             ],
+            "django": true,
             "justMyCode": false
         }
     ]

@@ -5,8 +5,10 @@ services:
   # Берем Dockerfile
     build: 
       context: ./
-    command: bash -c "python manage.py flush --no-input
-      && python manage.py migrate 
+    # command: bash -c "python manage.py flush --no-input
+    #   && python manage.py migrate 
+    #   && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py migrate 
       && python manage.py runserver 0.0.0.0:8000"
     # Открываем порт 8000 внутри и снаружи
     ports:
