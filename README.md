@@ -1,38 +1,36 @@
 # docker_django_dev_env
-### A template for quickly deploying a set of Docker containers(Docker Compose) for developing, debugging and running a simple Django project - Django, debugpy, PostgreSQL.
+### Проект-шаблон с набор контейнеров для быстрого развертывания окружения разработчика, использующегося для разработки, отладки и запуска Django-проекта. Контейнеры: Postgresql, Redis, Django, Celery. 
 
-## Description:
-### This template is intended only for running on a developer's machine, not for deployment to production! 
-A deployed set of containers will allow:
-- Editing django project files on the host and the changes will immediately be applied in the container, without the need for rebuilding (mounting the project code into the container via bind mount is configured). A user on the host and in the container with the same name and uid, which avoids conflicts with file rights.
-- Debugging code running in a container in VS Code (using the debugpy package and the VS Code configuration file for debugging).
-- Launching a container with the project code only after checking that the container with postgres is functioning properly and the database necessary for django has been created in it (healthcheck in docker compose).
+### Идея проекта: чтобы не таскать из проекта в проект, сохранить в репозитории docker-compose конфиг со всем необходимым, c которым может работать почти любой джанго-проект (с минимально необходимой настройкой: установка необходимых пакетов, настройка отладчика в джанго-проекте, заведение переменных окружения в .env).
 
-## Setup:
-1. Create a root folder with name your django project and go to it. Copy the template project from github there.
+## Требования:
+- Linux-based OS (тестировалось на Ubuntu 22.04.4), MacOS, WSL.
+- Установленный docker и docker compose.
+
+## Описание:
+### Это окружение разработчика и задумывалось только для запуска на машине разработчика, не для деплоя на бою! 
+Развернутый набор контейнеров позволит:
+- Редактировать файлы джанго проекта на хосте и изменения будут сразу применены в контейнере, без необходимости пересборки (код проекта примонтирован в контейнер через bind mount). Пользователь на хосте и в контейнере имеют одинаковое имя и uid, что позволяет избежать конфликта с правами на файлы при сохранении кода.
+- Отладка кода, запущенного в контейнере, в VS Code (используется пакет debugpy и конфиг VS Code для дебага).
+- В docker compose конфиге настроена очередность запуска контейнеров и необходимые healthchecks.
+
+## Настройка:
+1. Создать корневую папку с именем вашего джанго-проекта и зайти в нее. Внутри папки склонить проект с окружением разработчика и зайти в папку **docker_django_dev_env**.
 ```bash
 mkdir name_your_django_project  
 cd name_your_django_project  
 git clone https://github.com/weirdoomer/docker_django_dev_env.git
 cd docker_django_dev_env
 ```
-2. In the **docker_django_dev_env** folder, copy the project's django repository, adding it to the **app** folder
+2. В папку **docker_django_dev_env** склонить ваш джанго-проект, добавив его в папку **app**, выполнив команду:
 ```bash
 git clone your_repository_link ./app
 ```
-- In the **app** folder (in which the repository with the django project is cloned) there should be a file called **requirements.txt** and the following packages necessary for the containers to work: **Django, "psycopg[binary]", debugpy**
-```bash
-(pip freeze command output)
+- В папке **app** (в которую ранее склонировали ваш джанго-проект) должен быть файл requirements.txt (создать, если в вашем проекте ранее его не было) и следующие пакеты, необходимые для того, чтобы окружение разработчика работало правильно: **Django, "psycopg[binary]", debugpy**, **redis**, **django-redis**, **celery**
 
-asgiref==3.8.1
-debugpy==1.8.1
-Django==4.2.11
-psycopg==3.1.18
-psycopg-binary==3.1.18
-sqlparse==0.5.0
-typing_extensions==4.11.0
-```
-- The **docker_django_dev_env** folder should contain a **.env** file with the following environment variables necessary for building containers and running a django project. Instead of **paste_your_variable_value**, paste your values from **settings.py**
+- В папке **docker_django_dev_env** для правильной работы контейнеров должен быть файл **.env** со следующими переменными окружения, необходимыми для сборки контейнеров и работы джанго-проекта. Вместо **paste_your_variable_value** вставьте ваши значения из **settings.py**.
+
+**P.S**: Файл **.env** используется совместно docker-compose (переменные для postgres) и джанго-проектом (все переменные в файле). Если в вашем джанго-проекте ранее вы не выносили переменные окружения в файл, советую использовать os.environ или любое подобное решение. Это хорошая практика, влияющая на безопасность проекта. 
 ```bash
 DEBUG=True
 SECRET_KEY=paste_your_variable_value
@@ -44,7 +42,7 @@ POSTGRES_PASSWORD=paste_your_variable_value
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 ```
-3. To configure debugging in container via debugpy, add to the manage.py file
+3. Для настройки отладки в контейнере через debugpy, добавьте в файл **manage.py** следующее:
 ```python
 from django.conf import settings
 
@@ -55,39 +53,42 @@ from django.conf import settings
             debugpy.listen(('0.0.0.0', 3000))
             print('debugpy attached!')
 ```
-4. Docker commands:
-- to build containers with django and postgres, run
-```bash
-docker compose build --build-arg USER=$USER --build-arg UID=$UID
-```
-- to launch all containers in the background, run
-```bash
-docker compose up -d
-```
-- to stop all containers, run
-```bash
-docker compose stop
-```
-- to start stopped containers, run
-```bash
-docker compose start
-```
-- to remove all containers (with volumes attached to them, argument -v) run
-```bash
-docker compose down -v
-```
-- to delete all stopped containers, all networks not used by at least one container, all images without at least one container associated to them, all build cache
-```bash
-docker system prune -a
-```
 
-## Development:
-- The template has a file with vs code workspace (.vscode/project.code-workspace) and debug config (.vscode/launch.json). To open a project in vs code, open the file **project.code-workspace**.
-- The **docker_django_dev_env** folder will contain the template's git repository, the **app** folder will contain your django project's git repository - they are not related to each other. To update the deployment template files, you should do a **git pull** in the **docker_django_dev_env** folder. This will not affect your django project files, which are located in the **app** folder.
-- Edit the code and save. When saving files, the runserver inside the container will restart.
-- To debug the django project code, set breakpoints in the django project code, then in vs code click on the **Run and Debug** icon in the right panel and click on **the green play button** (the debugging configuration name will be **Python Debugging: Remote Attach**).
-- **Django shell** should be used inside a container, not on the host machine (since the database is also deployed inside the container, and not on the host machine). To use **django shell** run
+
+## Использование и разработка:
+-  Докер-команды для работы:
+    - сборка образов с джангой и celery на основе Dockerfile и передачей нужных аргументов:
+    ```bash
+    docker compose build --build-arg USER=$USER --build-arg UID=$UID
+    ```
+    - сборка образов оставшихся сервисов и запуск контейнеров (флаг -d освобождает терминал и выполняет команду в бэкграунде):
+    ```bash
+    docker compose up -d
+    ```
+    - остановка всех запущенных сервисов:
+    ```bash
+    docker compose stop
+    ```
+    - запуск остановленных сервисов:
+    ```bash
+    docker compose start
+    ```
+    - остановка и удаление всех контейнеров сервисов (флаг -v удаляет volumes, привязанные к сервисам)
+    ```bash
+    docker compose down -v
+    ```
+    - удаление всех остановленных контейнеров, всех сетей, не использующихся ни одним контейнером, всех образов, не использующихся ни одним контейнером, весь билд-кэш:
+    ```bash
+    docker system prune -a
+    ```
+
+- В шаблоне есть файл с vs code workspace (.vscode/project.code-workspace) и дебаг-конфиг (.vscode/launch.json). Для открытия проекта в vs code, открыть файл **project.code-workspace**.
+- Папка **docker_django_dev_env** содержит гит-репу шаблона (папка .git), папка **app** будет содержать свою гит-репу джанго-проекта - они не связаны друг с другом. Чтобы обновить файлы проекта с шаблоном нужно сделать **git pull** в папке **docker_django_dev_env**. Это не отразится на файлах джанго проекта, которые расположены в папке **app** (ибо папка app в .gitignore).
+Если обновление проекта с шаблоном не предвидится, можно вообще удалить .git папку из **docker_django_dev_env**.
+- При изменении файлов джанго-проекта на хосте, runserver внутри контейнера перезапустит сервер (на 16.08.24 пока используется не gunicorn, а джанговский runserver).
+- Для отладки кода джанго-проекта, поставить точки останова в коде, затем в vs code нажать на иконку **Run and Debug** на правой панели и нажать на зеленую кнопку play (конфигурация отладки будет называться **Python Debugging: Remote Attach**)
+- **Django shell** должен использоваться внутри контейнера с сервером, а не на хосте, чтобы не сломалась Django ORM (ибо бд также развернута в контейнере, а не на хосте). Для использования джанго-шелла выполнить:
 ```bash
 docker compose exec web python manage.py shell
 ```
-- Creating and applying migrations as well as other **manage.py** commands should also be executed to the web container via **docker compose exec**
+- Создание и применение миграций, также как и любые другие **manage.py** команды должны также использоваться в контейнере сервера через **docker compose exec**.
