@@ -1,29 +1,4 @@
-version: "3.8"
-
 services:
-  web:
-  # Берем Dockerfile
-    build: 
-      context: ./
-    # command: bash -c "python manage.py flush --no-input
-    #   && python manage.py migrate 
-    #   && python manage.py runserver 0.0.0.0:8000"
-    command: bash -c "python manage.py migrate 
-      && python manage.py runserver 0.0.0.0:8000"
-    # Открываем порт 8000 внутри и снаружи
-    ports:
-      - 8000:8000
-      - 3000:3000
-    volumes:
-      - type: bind
-        source: ./app
-        target: /home/${USER}/app/
-    # Файл содержащий переменные окружения для контейнера
-    env_file:
-      - ./.env
-    depends_on:
-        db:
-          condition: service_healthy
   db:
     image: postgres:16.2-bookworm
     restart: unless-stopped
@@ -37,6 +12,59 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
+  redis:
+    image: redis:7.4.0-bookworm
+    restart: unless-stopped
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+  web:
+    build:
+      # Берем Dockerfile 
+      context: ./
+    restart: unless-stopped
+    command: bash -c "python manage.py makemigrations
+      && python manage.py migrate 
+      && python manage.py runserver 0.0.0.0:8000"
+    # порт 3000 для debugpy
+    ports:
+      - 8000:8000
+      - 3000:3000
+    volumes:
+      - type: bind
+        source: ./app
+        target: /home/${USER}/app/
+    # Файл содержащий переменные окружения для контейнера
+    env_file:
+      - ./.env
+    depends_on:
+        db:
+          condition: service_healthy
+        redis:
+          condition: service_healthy
+  celery:
+    build:
+      # Берем Dockerfile 
+      context: ./
+    restart: unless-stopped
+    command: bash -c "python -m celery -A book_store worker -l INFO"
+    volumes:
+      - type: bind
+        source: ./app
+        target: /home/${USER}/app/
+    # Файл содержащий переменные окружения для контейнера
+    env_file:
+      - ./.env
+    depends_on:
+        db:
+          condition: service_healthy
+        redis:
+          condition: service_healthy
+        web:
+          condition: service_started
 volumes:
   postgres_volume:
