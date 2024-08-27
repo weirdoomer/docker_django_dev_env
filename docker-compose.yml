@@ -38,9 +38,6 @@ services:
       - type: bind
         source: ./app
         target: /home/${USER}/app/
-    # Файл содержащий переменные окружения для контейнера
-    env_file:
-      - ./.env
     depends_on:
         db:
           condition: service_healthy
@@ -56,9 +53,6 @@ services:
       - type: bind
         source: ./app
         target: /home/${USER}/app/
-    # Файл содержащий переменные окружения для контейнера
-    env_file:
-      - ./.env
     depends_on:
         db:
           condition: service_healthy
